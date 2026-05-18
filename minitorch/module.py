@@ -26,18 +26,23 @@ class Module:
 
     def modules(self) -> Sequence[Module]:
         "Return the direct child modules of this module."
+        # Equivalent to self._modules, but this class overrides the method __getattr__ and __setattr__, so we access __dict__ to avoid custom logic.
         m: Dict[str, Module] = self.__dict__["_modules"]
         return list(m.values())
 
     def train(self) -> None:
         "Set the mode of this module and all descendent modules to `train`."
         # TODO: Implement for Task 0.4.
-        raise NotImplementedError('Need to implement for Task 0.4')
+        self.training = True
+        for module in self.modules():
+            module.train()
 
     def eval(self) -> None:
         "Set the mode of this module and all descendent modules to `eval`."
         # TODO: Implement for Task 0.4.
-        raise NotImplementedError('Need to implement for Task 0.4')
+        self.training = False
+        for module in self.modules():
+            module.eval()
 
     def named_parameters(self) -> Sequence[Tuple[str, Parameter]]:
         """
@@ -47,13 +52,24 @@ class Module:
         Returns:
             The name and `Parameter` of each ancestor parameter.
         """
+        result = []
         # TODO: Implement for Task 0.4.
-        raise NotImplementedError('Need to implement for Task 0.4')
+        # parameters of this module
+        p: Dict[str, Parameter] = self.__dict__['_parameters']
+        for name, param in p.items():
+            result.append((name, param))
+
+        # parameters of child modules
+        for module_name, module in self.__dict__['_modules'].items():
+            for name, param in module.named_parameters():
+                result.append((module_name + '.' + name, param))
+
+        return result
 
     def parameters(self) -> Sequence[Parameter]:
         "Enumerate over all the parameters of this module and its descendents."
         # TODO: Implement for Task 0.4.
-        raise NotImplementedError('Need to implement for Task 0.4')
+        return [param for name, param in self.named_parameters()]
 
     def add_parameter(self, k: str, v: Any) -> Parameter:
         """
